@@ -1,8 +1,11 @@
 #' Scan BHCF Parquet files into DuckDB
 #'
 #' @param conn A valid DuckDB connection.
+#' @param kind Optional BHCF parquet kind (e.g. `"bhcf_float"`, `"float"`).
+#'   All matching files of the form `bhcf_<kind>_YYYYMMDD.parquet` are scanned.
 #' @param pq_file Optional Parquet filename or glob relative to resolved output
-#'   directory. If NULL, all `bhcf_*.parquet` files are scanned.
+#'   directory. May also be an absolute parquet path/glob when `data_dir` is not
+#'   supplied.
 #' @param data_dir Optional parent directory for Parquet output.
 #' @param schema Schema subdirectory. Default is `"bhcf"`.
 #' @param keep_filename Logical; include source filename in output.
@@ -10,6 +13,7 @@
 #' @return A lazy `tbl` backed by DuckDB.
 #' @export
 bhcf_scan_pqs <- function(conn,
+                          kind = NULL,
                           pq_file = NULL,
                           data_dir = NULL,
                           schema = "bhcf",
@@ -17,17 +21,38 @@ bhcf_scan_pqs <- function(conn,
 
   stopifnot(DBI::dbIsValid(conn))
 
-  pq_path <- resolve_out_dir(data_dir = data_dir, schema = schema)
-  if (is.null(pq_path) || !nzchar(pq_path)) {
-    stop("Provide `data_dir` or set `DATA_DIR`.", call. = FALSE)
+  # allow backward-compatible positional use: bhcf_scan_pqs(conn, "bhcf_float")
+  n_specified <- sum(!is.null(kind), !is.null(pq_file))
+  if (n_specified == 0L) {
+    kind <- "bhcf"
+  } else if (n_specified > 1L) {
+    stop("Provide at most one of `kind` or `pq_file`.", call. = FALSE)
   }
 
-  pq_path <- normalizePath(pq_path, mustWork = FALSE)
+  pq_path <- resolve_out_dir(data_dir = data_dir, schema = schema)
+  if (!is.null(pq_path)) {
+    pq_path <- normalizePath(pq_path, mustWork = FALSE)
+  }
 
-  glob <- if (is.null(pq_file)) {
-    file.path(pq_path, "bhcf_*.parquet")
+  if (!is.null(kind)) {
+    if (is.null(pq_path) || !nzchar(pq_path)) {
+      stop("Provide `data_dir` or set `DATA_DIR`.", call. = FALSE)
+    }
+
+    kind_pattern <- if (identical(kind, "bhcf")) {
+      "bhcf"
+    } else if (startsWith(kind, "bhcf_")) {
+      kind
+    } else {
+      paste0("bhcf_", kind)
+    }
+    glob <- file.path(pq_path, sprintf("%s_*.parquet", kind_pattern))
   } else {
-    file.path(pq_path, pq_file)
+    glob <- if (is.null(pq_path) || !nzchar(pq_path)) {
+      pq_file
+    } else {
+      file.path(pq_path, pq_file)
+    }
   }
 
   matches <- Sys.glob(glob)

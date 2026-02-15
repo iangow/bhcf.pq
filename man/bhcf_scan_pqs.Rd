@@ -6,6 +6,7 @@
 \usage{
 bhcf_scan_pqs(
   conn,
+  kind = NULL,
   pq_file = NULL,
   data_dir = NULL,
   schema = "bhcf",
@@ -15,8 +16,12 @@ bhcf_scan_pqs(
 \arguments{
 \item{conn}{A valid DuckDB connection.}
 
+\item{kind}{Optional BHCF parquet kind (e.g. `"bhcf_float"`, `"float"`).
+All matching files of the form `bhcf_<kind>_YYYYMMDD.parquet` are scanned.}
+
 \item{pq_file}{Optional Parquet filename or glob relative to resolved output
-directory. If NULL, all `bhcf_*.parquet` files are scanned.}
+directory. May also be an absolute parquet path/glob when `data_dir` is not
+supplied.}
 
 \item{data_dir}{Optional parent directory for Parquet output.}
 

@@ -12,6 +12,8 @@ Authors@R: c(
       role = c("aut", "cre")
     )
   )
+Author: Ian Gow [aut, cre]
+Maintainer: Ian Gow <iandgow@gmail.com>
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -20,7 +22,6 @@ Imports:
     DBI,
     dbplyr,
     dplyr,
-    duckdb,
     purrr,
     readr,
     stringr,
