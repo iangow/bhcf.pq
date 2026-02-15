@@ -1,0 +1,33 @@
+Package: bhcf.pq
+Type: Package
+Title: Tools for Processing FFIEC BHCF Data
+Version: 0.1.0
+Description: Utilities for parsing and processing downloaded FFIEC BHCF
+    bulk zip data into columnar Parquet files suitable for analysis in R,
+    Python, and SQL engines such as DuckDB.
+Authors@R: c(
+    person(
+      "Ian", "Gow",
+      email = "iandgow@gmail.com",
+      role = c("aut", "cre")
+    )
+  )
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    arrow,
+    DBI,
+    dbplyr,
+    dplyr,
+    duckdb,
+    purrr,
+    readr,
+    stringr,
+    tibble,
+    tidyr
+Suggests:
+    googlesheets4
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 4.1.0)
